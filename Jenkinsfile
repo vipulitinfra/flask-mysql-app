@@ -2,35 +2,60 @@ pipeline {
 
     agent any
 
+    environment {
+
+        IMAGE_NAME = "vipulitinfra/flask-mysql-app"
+
+    }
+
     stages {
 
         stage('Clone Repository') {
 
             steps {
-                 git url: 'https://github.com/vipulitinfra/flask-mysql-app.git',
-                    branch: 'main'
+
+                git 'https://github.com/vipulitinfra/flask-mysql-app.git'
 
             }
 
         }
 
-        stage('Build Containers') {
-
-            steps {
-
-                sh 'docker compose build'
-
-            }
-
-        }
-
-        stage('Deploy') {
+        stage('Build Docker Image') {
 
             steps {
 
                 sh '''
-                docker compose down || true
-                docker compose up -d
+                docker build -t $IMAGE_NAME:latest .
+                '''
+            }
+
+        }
+
+        stage('Docker Login') {
+
+            steps {
+
+                withCredentials([
+                usernamePassword(
+                credentialsId: 'dockerhub-creds',
+                usernameVariable: 'USER',
+                passwordVariable: 'PASS'
+                )
+                ]) {
+
+                sh '''
+                echo $PASS | docker login -u $USER --password-stdin
+                '''
+                }
+            }
+        }
+
+        stage('Push To Docker Hub') {
+
+            steps {
+
+                sh '''
+                docker push $IMAGE_NAME:latest
                 '''
             }
 
