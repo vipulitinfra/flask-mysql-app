@@ -8,7 +8,7 @@ pipeline {
 
             steps {
 
-                git 'https://github.com/yourname/flask-mysql-app.git', git branch: 'main'
+                    git branch: 'main', url: 'https://github.com/vipulitinfra/flask-mysql-app.git'
 
             }
 
